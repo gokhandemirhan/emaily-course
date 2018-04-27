@@ -1,9 +1,13 @@
 const express = require("express");
+
+require("./services/passport");
+
 const app = express();
 
-app.get("/", (req, res) => {
-	res.send({ hello: "world" });
-});
+/*
+ * Require the auth routes function and immediately call it with "app" parameter
+ */
+require("./routes/authRoutes")(app);
 
 /*
  * Define port for heroku's dynamic port
