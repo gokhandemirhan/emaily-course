@@ -1,7 +1,29 @@
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const keys = require("../config/keys");
+const mongoose = require("mongoose");
 
+/*
+ * Mongoose model class
+ */
+const User = mongoose.model("Users");
+
+/*
+ * Serialize user object for cookie creation
+ */
+passport.serializeUser((user, done) => {
+    done(null, user.id);
+});
+
+passport.deserializeUser((id, done) => {
+    User.findById(id).then(user => {
+        done(null, user);
+    });
+});
+
+/*
+ * Authenticate user with Google
+ */
 passport.use(
     new GoogleStrategy(
         {
@@ -13,8 +35,19 @@ passport.use(
             /*
              * Callback function that passport.js made to google
              */
-            console.log('accessToken',accessToken);
-            console.log('profile',profile);
+
+            User.findOne({ googleId: profile.id }).then(user => {
+                if (user) {
+                    // We already have a record with given googleId
+                    // call passport.js done function with null error
+                    done(null, user);
+                } else {
+                    new User({ googleId: profile.id }).save().then(user => {
+                        //Call done function with the newly created user
+                        done(null, user);
+                    });
+                }
+            });
         }
     )
 );
