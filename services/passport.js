@@ -23,13 +23,16 @@ passport.deserializeUser((id, done) => {
 
 /*
  * Authenticate user with Google
+ * If we provide relative path (/auth/google/callback), 
+ * can cause https/http issues on redirection
  */
 passport.use(
     new GoogleStrategy(
         {
             clientID: keys.googleClientID,
             clientSecret: keys.googleCLientSecret,
-            callbackURL: "/auth/google/callback"
+            callbackURL: "/auth/google/callback",
+            proxy:true
         },
         (accessToken, refreshToken, profile, done) => {
             /*
