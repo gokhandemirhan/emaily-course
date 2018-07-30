@@ -32,25 +32,23 @@ passport.use(
             clientID: keys.googleClientID,
             clientSecret: keys.googleCLientSecret,
             callbackURL: "/auth/google/callback",
-            proxy:true
+            proxy: true
         },
-        (accessToken, refreshToken, profile, done) => {
+        async (accessToken, refreshToken, profile, done) => {
             /*
              * Callback function that passport.js made to google
              */
 
-            User.findOne({ googleId: profile.id }).then(user => {
-                if (user) {
-                    // We already have a record with given googleId
-                    // call passport.js done function with null error
-                    done(null, user);
-                } else {
-                    new User({ googleId: profile.id }).save().then(user => {
-                        //Call done function with the newly created user
-                        done(null, user);
-                    });
-                }
-            });
+            const user = await User.findOne({ googleId: profile.id });
+
+            if (user) {
+                // We already have a record with given googleId
+                // call passport.js done function with null error
+                return done(null, user);
+            }
+            
+            const newUser = await new User({ googleId: profile.id }).save();
+            done(null, newUser);
         }
     )
 );
